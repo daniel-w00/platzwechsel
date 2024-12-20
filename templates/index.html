@@ -19,6 +19,27 @@
         .highlighted {
             background-color: yellow;
         }
+        .contact-table {
+        margin: 20px auto;
+        border-collapse: collapse;
+        }
+        .contact-table td {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        .contact-table .had-contact {
+            background-color: #90EE90;
+        }
+        .contact-table .self {
+            background-color: #ddd;
+        }
+        .matrix-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -29,6 +50,7 @@
         <div id="result"></div>
         <div id="table"></div>
         <button id="nextStep" style="display: none;" onclick="showNextState()">Nächster Schritt</button>
+        <div id="contactMatrix"></div>
     </div>
 
     <script>
@@ -79,7 +101,44 @@
     }
 
     document.getElementById('table').innerHTML = html;
+
+    // Kontaktmatrix hinzufügen
+    showContactMatrix(state);
 }
+function showContactMatrix(state) {
+    const n = state.arrangement.length;
+    let html = '<div class="matrix-container"><table class="contact-table">';
+
+    // Header-Zeile
+    html += '<tr><td></td>';
+    for (let i = 0; i < n; i++) {
+        html += `<td>${i + 1}</td>`;
+    }
+    html += '</tr>';
+
+    // Matrix-Inhalt
+    for (let i = 0; i < n; i++) {
+        html += `<tr><td>${i + 1}</td>`;
+        for (let j = 0; j < n; j++) {
+            let cellClass = '';
+            if (i === j) {
+                cellClass = 'self';
+            } else {
+                // Prüfe ob Kontakt bestand (Bit gesetzt ist)
+                const hadContact = (state.neighbor_history[i] & (1 << j)) !== 0;
+                if (hadContact) {
+                    cellClass = 'had-contact';
+                }
+            }
+            html += `<td class="${cellClass}"></td>`;
+        }
+        html += '</tr>';
+    }
+
+    html += '</table></div>';
+    document.getElementById('contactMatrix').innerHTML = html;
+}
+
 
 // Hilfsfunktion zum Zählen der gesetzten Bits
 function countBits(n) {
