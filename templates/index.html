@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sitzplatz-Optimierer</title>
+    <style>
+        .table { text-align: center; margin: 20px auto; }
+        .person { display: inline-block; width: 30px; height: 30px; margin: 5px; border: 1px solid black; line-height: 30px; }
+        .highlighted { background-color: yellow; }
+    </style>
+</head>
+<body>
+    <div style="text-align: center;">
+        <h2>Sitzplatz-Optimierer</h2>
+        <input type="number" id="n_per_side" min="2" value="6">
+        <button onclick="optimize()">Optimieren</button>
+        <div id="result"></div>
+        <div id="table"></div>
+        <button id="nextStep" style="display: none;" onclick="showNextState()">Nächster Schritt</button>
+    </div>
+
+    <script>
+    let states = [];
+    let currentState = 0;
+
+    function optimize() {
+        const n = document.getElementById('n_per_side').value;
+        fetch('/optimize', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({n_per_side: parseInt(n)})
+        })
+        .then(response => response.json())
+        .then(data => {
+            states = data.states;
+            currentState = 0;
+            document.getElementById('result').innerHTML =
+                `Benötigte Platzwechsel: ${data.total_swaps}`;
+            document.getElementById('nextStep').style.display = 'inline';
+            showState();
+        });
+    }
+
+    function showState() {
+        const state = states[currentState];
+        const n = document.getElementById('n_per_side').value;
+        let html = '<div class="table">';
+
+        // Erste Reihe
+        for (let i = 0; i < n; i++) {
+            html += `<div class="person">${state.arrangement[i] + 1}</div>`;
+        }
+        html += '<br>';
+        // Zweite Reihe
+        for (let i = n; i < 2*n; i++) {
+            html += `<div class="person">${state.arrangement[i] + 1}</div>`;
+        }
+        html += '</div>';
+
+        if (state.swap) {
+            html += `<div>Tausche Person ${state.swap[0] + 1} mit Person ${state.swap[1] + 1}</div>`;
+        }
+
+        document.getElementById('table').innerHTML = html;
+    }
+
+    function showNextState() {
+        if (currentState < states.length - 1) {
+            currentState++;
+            showState();
+        }
+    }
+    </script>
+</body>
+</html>

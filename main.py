@@ -255,7 +255,7 @@ def optimize_seating(optimizer: SeatingOptimizer) -> None:
 
 
 if __name__ == "__main__":
-    optimizer = SeatingOptimizer(n_per_side=6)
+    optimizer = SeatingOptimizer(n_per_side=10)
 
     optimize_seating(optimizer)
 
