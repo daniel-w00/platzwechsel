@@ -9,7 +9,8 @@ class SeatingState:
     # Für jede Person ein Integer, dessen Bits die Nachbarhistorie repräsentieren
     neighbor_history: List[int]
     # Liste der durchgeführten Tauschoperationen als Tupel (pos1, pos2)
-    swap_history: List[Tuple[int, int]]
+    swap_history_of_positions: List[Tuple[int, int]]
+    swap_history_of_persons: List[Tuple[int, int]]
 
 
 class SeatingOptimizer:
@@ -21,7 +22,8 @@ class SeatingOptimizer:
         self.initial_state = SeatingState(
             current_arrangement=list(range(self.total_seats)),
             neighbor_history=[1 << i for i in range(self.total_seats)], # Jeder Int ist eine Bitmask mit sich selbst als Nachbar
-            swap_history=[]
+            swap_history_of_positions=[],
+            swap_history_of_persons=[]
         )
 
 
@@ -126,13 +128,18 @@ class SeatingOptimizer:
         new_history = state.neighbor_history.copy()
 
         # Kopiere und erweitere Tauschhistorie
-        new_swap_history = state.swap_history.copy()
-        new_swap_history.append((pos1, pos2))
+        new_swap_pos_history = state.swap_history_of_positions.copy()
+        new_swap_pos_history.append((pos1, pos2))
+
+        #kopiere und erweitere Tauschhistorie von Personen
+        new_swap_person_history = state.swap_history_of_persons.copy()
+        new_swap_person_history.append((new_arrangement[pos1], new_arrangement[pos2]))
 
         new_seating_state=  SeatingState(
             current_arrangement=new_arrangement,
             neighbor_history=state.neighbor_history.copy(), #not updated yet
-            swap_history=new_swap_history
+            swap_history_of_positions=new_swap_pos_history,
+            swap_history_of_persons=new_swap_person_history
         )
         self.update_neighbor_history_for_swap(new_seating_state, pos1, pos2)
 
@@ -191,10 +198,14 @@ class SeatingOptimizer:
     def print_state(self, state: SeatingState) -> None:
         """Gibt den aktuellen Zustand lesbar aus."""
         self.print_pretty_seating_order(state, self.n_per_side)
-        print("Durchgeführte Tauschoperationen:")
-        for i, (pos1, pos2) in enumerate(state.swap_history, 1):
-            # +1 für 1-basierte Ausgabe
-            print(f"Tausch {i}: Position {pos1 + 1} ↔ {pos2 + 1}")
+        print("Letzte Tauschoperationen:")
+        if state.swap_history_of_positions:
+            pos1, pos2 = state.swap_history_of_positions[-1]
+            print(
+                f"Personen {state.current_arrangement[pos1] + 1} ↔ {state.current_arrangement[pos2] + 1}  (Position {pos1 + 1} ↔ {pos2 + 1})")
+        else:
+            print("Keine Tauschoperationen durchgeführt.")
+
         print("Nachbarhistorie:")
         for person in range(self.total_seats):
             neighbors = []
@@ -214,7 +225,7 @@ class SeatingOptimizer:
         print("Vollständig:", self.is_complete(self.state_history[-1]))
 
         #print how many swaps were needed
-        print("Anzahl Tauschoperationen:", len(self.state_history[-1].swap_history))
+        print("Anzahl Tauschoperationen:", len(self.state_history[-1].swap_history_of_positions))
 
 
 def test_swapping():
