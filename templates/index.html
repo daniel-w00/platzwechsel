@@ -1,11 +1,24 @@
 <!DOCTYPE html>
+
 <html>
 <head>
     <title>Sitzplatz-Optimierer</title>
     <style>
         .table { text-align: center; margin: 20px auto; }
-        .person { display: inline-block; width: 30px; height: 30px; margin: 5px; border: 1px solid black; line-height: 30px; }
-        .highlighted { background-color: yellow; }
+        .person {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        margin: 5px;
+        border: 1px solid black;
+        line-height: 30px;
+        }
+        .complete {
+            background-color: #90EE90;  /* Helles Grün */
+        }
+        .highlighted {
+            background-color: yellow;
+        }
     </style>
 </head>
 <body>
@@ -40,28 +53,39 @@
         });
     }
 
-    function showState() {
-        const state = states[currentState];
-        const n = document.getElementById('n_per_side').value;
-        let html = '<div class="table">';
+  function showState() {
+    const state = states[currentState];
+    const n = document.getElementById('n_per_side').value;
+    let html = '<div class="table">';
 
-        // Erste Reihe
-        for (let i = 0; i < n; i++) {
-            html += `<div class="person">${state.arrangement[i] + 1}</div>`;
-        }
-        html += '<br>';
-        // Zweite Reihe
-        for (let i = n; i < 2*n; i++) {
-            html += `<div class="person">${state.arrangement[i] + 1}</div>`;
-        }
-        html += '</div>';
-
-        if (state.swap) {
-            html += `<div>Tausche Person ${state.swap[0] + 1} mit Person ${state.swap[1] + 1}</div>`;
-        }
-
-        document.getElementById('table').innerHTML = html;
+    // Erste Reihe
+    for (let i = 0; i < n; i++) {
+        const person = state.arrangement[i];
+        // Prüfe ob Person alle möglichen Nachbarn hatte (Bits zählen)
+        const isComplete = countBits(state.neighbor_history[person]) >= state.total_seats;
+        html += `<div class="person ${isComplete ? 'complete' : ''}">${person + 1}</div>`;
     }
+    html += '<br>';
+    // Zweite Reihe
+    for (let i = n; i < 2*n; i++) {
+        const person = state.arrangement[i];
+        const isComplete = countBits(state.neighbor_history[person]) >= state.total_seats;
+        html += `<div class="person ${isComplete ? 'complete' : ''}">${person + 1}</div>`;
+    }
+    html += '</div>';
+
+    if (state.swap) {
+        html += `<div>Tausche Person ${state.swap[0] + 1} mit Person ${state.swap[1] + 1}</div>`;
+    }
+
+    document.getElementById('table').innerHTML = html;
+}
+
+// Hilfsfunktion zum Zählen der gesetzten Bits
+function countBits(n) {
+    return n.toString(2).split('1').length - 1;
+}
+
 
     function showNextState() {
         if (currentState < states.length - 1) {

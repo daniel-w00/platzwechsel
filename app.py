@@ -26,6 +26,8 @@ def optimize():
     for state in optimizer.state_history:
         states.append({
             'arrangement': state.current_arrangement,
+            'neighbor_history': state.neighbor_history,
+            'total_seats': optimizer.total_seats,
             'swap': state.swap_history_of_persons[-1] if state.swap_history_of_persons else None
         })
 
