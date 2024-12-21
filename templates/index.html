@@ -75,7 +75,7 @@
     <div style="text-align: center;">
         <h2>Platzwechsel-Optimierer</h2>
     <div style="margin-bottom: 10px">Anzahl der Personen pro Tischseite:</div>
-    <input type="number" id="n_per_side" min="2" value="6">
+    <input type="number" id="n_per_side" min="2" max="20" value="6">
     <button onclick="optimize()">Optimieren</button>
         <div id="result"></div>
         <div id="table"></div>
@@ -89,6 +89,10 @@
 
     function optimize() {
         const n = document.getElementById('n_per_side').value;
+        if (n > 20) {
+        alert("Bitte wählen Sie maximal 40 Personen pro Tischseite.");
+        return;
+    }
         fetch('/optimize', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
