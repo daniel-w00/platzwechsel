@@ -75,7 +75,7 @@
     <div style="text-align: center;">
         <h2>Platzwechsel-Optimierer</h2>
     <div style="margin-bottom: 10px">Anzahl der Personen pro Tischseite:</div>
-    <input type="number" id="n_per_side" min="2" max="20" value="6">
+    <input type="number" id="n_per_side" min="2" max="30" value="6">
     <button onclick="optimize()">Optimieren</button>
         <div id="result"></div>
         <div id="table"></div>
@@ -89,7 +89,7 @@
 
     function optimize() {
         const n = document.getElementById('n_per_side').value;
-        if (n > 20) {
+        if (n > 30) {
         alert("Bitte wählen Sie maximal 40 Personen pro Tischseite.");
         return;
     }
@@ -157,8 +157,8 @@ function showContactMatrix(state) {
             if (i === j) {
                 cellClass = 'self';
             } else {
-                // Prüfe ob Kontakt bestand (Bit gesetzt ist)
-                const hadContact = (state.neighbor_history[i] & (1 << j)) !== 0;
+                // Sichere Bit-Operation mit BigInt
+                const hadContact = (BigInt(state.neighbor_history[i]) & (BigInt(1) << BigInt(j))) !== BigInt(0);
                 if (hadContact) {
                     cellClass = 'had-contact';
                 }
@@ -171,6 +171,7 @@ function showContactMatrix(state) {
     html += '</table></div>';
     document.getElementById('contactMatrix').innerHTML = html;
 }
+
 
 
 // Hilfsfunktion zum Zählen der gesetzten Bits
