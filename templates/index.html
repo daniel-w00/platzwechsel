@@ -1,86 +1,206 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="de">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Platzwechsel-Optimierer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-               .table {
-            white-space: nowrap;  /* Verhindert Zeilenumbruch */
-            width: 100%;
-            overflow-x: auto;    /* Horizontales Scrollen wenn nötig */
+        body { font-family: 'Inter', sans-serif; }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .person {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            margin: 5px;
-            border: 1px solid black;
-            line-height: 40px;
-            font-size: 16px;
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            transition: all 0.2s ease;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
         }
-        .complete {
-                    background-color: #90EE90;  /* Helles Grün */
-                }
-        .highlighted {
-            background-color: yellow;
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
         }
-        .contact-table {
-            margin: 20px auto;
-            border-collapse: collapse;
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            transition: all 0.2s ease;
         }
-        .contact-table td {
-            width: 35px;
-            height: 35px;
-            font-size: 14px;
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+        }
+
+        .person-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 4px;
+            border: 2px solid rgba(99,102,241,0.3);
+            background: #1e293b;
+            color: #94a3b8;
+            transition: all 0.3s ease;
+        }
+        .person-chip.complete {
+            border-color: #22c55e;
+            color: #86efac;
+            background: rgba(34, 197, 94, 0.12);
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+        }
+        .person-chip.swapped {
+            border-color: #f59e0b;
+            color: #fde68a;
+            background: rgba(245, 158, 11, 0.15);
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+            animation: pulse-swap 0.6s ease-in-out;
+        }
+
+        @keyframes pulse-swap {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(1.25); }
+            70%  { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        .matrix-cell {
+            width: 22px;
+            height: 22px;
+            transition: background-color 0.4s ease;
+        }
+        .matrix-cell.had-contact { background-color: #16a34a; }
+        .matrix-cell.no-contact  { background-color: #1e293b; }
+        .matrix-cell.self        { background-color: #334155; }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid rgba(99,102,241,0.15);
+            border-radius: 16px;
+        }
+
+        .table-lane {
+            background: rgba(99,102,241,0.05);
+            border: 1px solid rgba(99,102,241,0.1);
+            border-radius: 12px;
+            padding: 8px 12px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .divider-label {
+            font-size: 11px;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
             text-align: center;
-            border: 1px solid #ddd;
+            margin: 4px 0;
         }
 
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            .table {
-                transform: scale(0.9);
-                margin: 10px auto;
-            }
-
-            .matrix-container {
-                overflow-x: auto;  /* horizontales Scrollen wenn nötig */
-                padding: 10px;
-            }
-
-            input[type="number"] {
-                width: 60px;
-                height: 40px;
-                font-size: 16px;
-            }
-
-            button {
-                padding: 10px 20px;
-                font-size: 16px;
-                margin: 10px;
-            }
+        .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            flex-shrink: 0;
         }
-        .contact-table .had-contact {
-        background-color: #90EE90;  /* Helles Grün */
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            background: rgba(99,102,241,0.2);
+            color: #a5b4fc;
+            border: 1px solid rgba(99,102,241,0.3);
         }
-        .contact-table .self {
-            background-color: #ddd;     /* Grau für Diagonale */
+
+        input[type="number"] {
+            background: #0f172a;
+            border: 1px solid rgba(99,102,241,0.4);
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 16px;
+            width: 80px;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s;
         }
+        input[type="number"]:focus { border-color: #818cf8; }
+        input[type="number"]::-webkit-inner-spin-button { opacity: 0.4; }
     </style>
 </head>
+<body class="min-h-screen" style="background:#0f172a; color:#e2e8f0;">
 
-<body>
-    <div style="text-align: center;">
-        <h2>Platzwechsel-Optimierer</h2>
-    <div style="margin-bottom: 10px">Anzahl der Personen pro Tischseite:</div>
-    <input type="number" id="n_per_side" min="2" max="30" value="6">
-    <button onclick="optimize()">Optimieren</button>
-        <div id="result"></div>
-        <div id="table"></div>
-        <button id="nextStep" style="display: none;" onclick="showNextState()">Nächster Schritt</button>
-        <div id="contactMatrix"></div>
+    <div class="max-w-3xl mx-auto px-4 py-12">
+
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold gradient-text mb-2">Platzwechsel</h1>
+            <p class="text-slate-400 text-sm">Optimierer für Sitzplatz-Rotationen</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="card p-6 mb-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div class="flex flex-col items-center gap-1">
+                <label class="text-xs text-slate-500 uppercase tracking-widest">Personen pro Seite</label>
+                <input type="number" id="n_per_side" min="2" max="30" value="6">
+            </div>
+            <button onclick="optimize()" id="optimizeBtn"
+                class="btn-primary text-white font-semibold px-8 py-3 rounded-xl flex items-center gap-2">
+                <div class="spinner" id="spinner"></div>
+                <span id="btnText">Optimieren</span>
+            </button>
+        </div>
+
+        <!-- Result badge + step info -->
+        <div id="resultBar" class="hidden text-center mb-4 flex items-center justify-center gap-3 flex-wrap">
+            <span id="totalSwapsBadge" class="badge"></span>
+            <span id="stepCounter" class="text-slate-400 text-sm"></span>
+        </div>
+
+        <!-- Seating table -->
+        <div id="seatingCard" class="card p-6 mb-6 hidden">
+            <div class="divider-label mb-1">Seite A</div>
+            <div class="table-lane" id="rowA"></div>
+            <div class="divider-label my-2">&#8593; Tisch &#8595;</div>
+            <div class="table-lane" id="rowB"></div>
+            <div id="swapInfo" class="text-center mt-4 text-sm text-amber-400 font-medium min-h-5"></div>
+        </div>
+
+        <!-- Next step button -->
+        <div class="text-center mb-6">
+            <button id="nextStep" onclick="showNextState()"
+                class="btn-secondary hidden text-white font-semibold px-8 py-3 rounded-xl">
+                Nächster Schritt &rarr;
+            </button>
+        </div>
+
+        <!-- Contact matrix -->
+        <div id="matrixCard" class="card p-6 hidden">
+            <h3 class="text-xs uppercase tracking-widest text-slate-500 mb-4 text-center">Kontaktmatrix</h3>
+            <div class="overflow-x-auto">
+                <div id="contactMatrix"></div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -88,97 +208,113 @@
     let currentState = 0;
 
     function optimize() {
-        const n = document.getElementById('n_per_side').value;
-        if (n > 30) {
-        alert("Bitte wählen Sie maximal 40 Personen pro Tischseite.");
-        return;
-    }
+        const n = parseInt(document.getElementById('n_per_side').value);
+        if (n > 30) { alert("Maximal 30 Personen pro Tischseite."); return; }
+
+        document.getElementById('spinner').style.display = 'block';
+        document.getElementById('btnText').textContent = 'Berechne\u2026';
+        document.getElementById('optimizeBtn').disabled = true;
+
         fetch('/optimize', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({n_per_side: parseInt(n)})
+            body: JSON.stringify({n_per_side: n})
         })
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
             states = data.states;
             currentState = 0;
-            document.getElementById('result').innerHTML =
-                `Benötigte Platzwechsel: ${data.total_swaps}`;
-            document.getElementById('nextStep').style.display = 'inline';
+
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('btnText').textContent = 'Optimieren';
+            document.getElementById('optimizeBtn').disabled = false;
+
+            document.getElementById('totalSwapsBadge').textContent =
+                data.total_swaps + ' Platzwechsel n\u00f6tig';
+            document.getElementById('resultBar').classList.remove('hidden');
+            document.getElementById('seatingCard').classList.remove('hidden');
+            document.getElementById('matrixCard').classList.remove('hidden');
+            document.getElementById('nextStep').classList.remove('hidden');
+
             showState();
+        })
+        .catch(() => {
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('btnText').textContent = 'Optimieren';
+            document.getElementById('optimizeBtn').disabled = false;
         });
     }
 
-  function showState() {
-    const state = states[currentState];
-    const n = parseInt(document.getElementById('n_per_side').value);
-    let html = '<div class="table">';
+    function showState() {
+        const state = states[currentState];
+        const n = parseInt(document.getElementById('n_per_side').value);
+        const swapped = state.swap ? [state.swap[0], state.swap[1]] : [];
 
-    // Erste Reihe (immer die ersten n Personen)
-    for (let i = 0; i < n; i++) {
-        const person = state.arrangement[i];
-        const isComplete = countBits(state.neighbor_history[person]) >= state.total_seats;
-        html += `<div class="person ${isComplete ? 'complete' : ''}">${person + 1}</div>`;
+        document.getElementById('stepCounter').textContent =
+            'Schritt ' + currentState + ' / ' + (states.length - 1);
+
+        if (currentState >= states.length - 1) {
+            document.getElementById('nextStep').classList.add('hidden');
+        }
+
+        renderRow('rowA', state, 0, n, swapped);
+        renderRow('rowB', state, n, 2 * n, swapped);
+
+        const info = document.getElementById('swapInfo');
+        if (state.swap) {
+            info.textContent = 'Person ' + (state.swap[0] + 1) + ' \u2194 Person ' + (state.swap[1] + 1) + ' getauscht';
+        } else {
+            info.textContent = 'Ausgangszustand';
+        }
+
+        showContactMatrix(state);
     }
-    html += '<br>';
 
-    // Zweite Reihe (immer die zweiten n Personen)
-    for (let i = n; i < 2*n; i++) {
-        const person = state.arrangement[i];
-        const isComplete = countBits(state.neighbor_history[person]) >= state.total_seats;
-        html += `<div class="person ${isComplete ? 'complete' : ''}">${person + 1}</div>`;
+    function renderRow(containerId, state, from, to, swapped) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        for (let i = from; i < to; i++) {
+            const person = state.arrangement[i];
+            const isComplete = countBits(BigInt(state.neighbor_history[person])) >= state.total_seats;
+            const isSwapped = swapped.includes(person);
+            const chip = document.createElement('div');
+            chip.className = 'person-chip' + (isSwapped ? ' swapped' : (isComplete ? ' complete' : ''));
+            chip.textContent = person + 1;
+            container.appendChild(chip);
+        }
     }
-    html += '</div>';
 
-    if (state.swap) {
-        html += `<div>Person ${state.swap[0] + 1} mit Person ${state.swap[1] + 1} getauscht</div>`;
-    }
-
-    document.getElementById('table').innerHTML = html;
-    showContactMatrix(state);
-}
-
-function showContactMatrix(state) {
-    const n = state.arrangement.length;
-    let html = '<div class="matrix-container"><table class="contact-table">';
-
-    // Header-Zeile
-    html += '<tr><td></td>';
-    for (let i = 0; i < n; i++) {
-        html += `<td>${i + 1}</td>`;
-    }
-    html += '</tr>';
-
-    // Matrix-Inhalt
-    for (let i = 0; i < n; i++) {
-        html += `<tr><td>${i + 1}</td>`;
-        for (let j = 0; j < n; j++) {
-            let cellClass = '';
-            if (i === j) {
-                cellClass = 'self';
-            } else {
-                // Sichere Bit-Operation mit BigInt
-                const hadContact = (BigInt(state.neighbor_history[i]) & (BigInt(1) << BigInt(j))) !== BigInt(0);
-                if (hadContact) {
-                    cellClass = 'had-contact';
-                }
-            }
-            html += `<td class="${cellClass}"></td>`;
+    function showContactMatrix(state) {
+        const n = state.arrangement.length;
+        let html = '<table style="border-collapse:collapse;margin:0 auto;">';
+        html += '<tr><td class="matrix-cell"></td>';
+        for (let i = 0; i < n; i++) {
+            html += '<td class="matrix-cell" style="font-size:9px;color:#475569;text-align:center;">' + (i+1) + '</td>';
         }
         html += '</tr>';
+        for (let i = 0; i < n; i++) {
+            html += '<tr><td class="matrix-cell" style="font-size:9px;color:#475569;text-align:center;">' + (i+1) + '</td>';
+            for (let j = 0; j < n; j++) {
+                let cls;
+                if (i === j) {
+                    cls = 'self';
+                } else {
+                    const had = (BigInt(state.neighbor_history[i]) & (BigInt(1) << BigInt(j))) !== BigInt(0);
+                    cls = had ? 'had-contact' : 'no-contact';
+                }
+                html += '<td class="matrix-cell ' + cls + '"></td>';
+            }
+            html += '</tr>';
+        }
+        html += '</table>';
+        document.getElementById('contactMatrix').innerHTML = html;
     }
 
-    html += '</table></div>';
-    document.getElementById('contactMatrix').innerHTML = html;
-}
-
-
-
-// Hilfsfunktion zum Zählen der gesetzten Bits
-function countBits(n) {
-    return n.toString(2).split('1').length - 1;
-}
-
+    function countBits(n) {
+        let count = 0n, x = BigInt(n);
+        while (x > 0n) { count += x & 1n; x >>= 1n; }
+        return Number(count);
+    }
 
     function showNextState() {
         if (currentState < states.length - 1) {
