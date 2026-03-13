@@ -38,18 +38,60 @@
             box-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
         }
 
+        /* ── Chair layout ──
+           Structure (top row):   [back] [seat + person-circle]
+           Structure (bottom row): [seat + person-circle] [back]
+        */
+        .chair-container {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 4px 6px;
+        }
+
+        /* Prominent chair back */
+        .chair-back {
+            width: 54px;
+            height: 30px;
+            border: 2.5px solid rgba(99,102,241,0.6);
+            background: linear-gradient(180deg, #1e2e50, #151f38);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .chair-back.top    { border-radius: 14px 14px 0 0; border-bottom: none; }
+        .chair-back.bottom { border-radius: 0 0 14px 14px; border-top: none; }
+        .chair-back.complete { border-color: #22c55e; background: linear-gradient(180deg,rgba(34,197,94,0.18),rgba(34,197,94,0.08)); }
+        .chair-back.swapped  { border-color: #f59e0b; background: linear-gradient(180deg,rgba(245,158,11,0.2),rgba(245,158,11,0.08)); }
+
+        /* Seat cushion – rectangle that frames the person */
+        .chair-seat {
+            width: 54px;
+            height: 54px;
+            border: 2.5px solid rgba(99,102,241,0.45);
+            background: #1c2d44;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .chair-seat.top    { border-top: none; border-radius: 0 0 10px 10px; }
+        .chair-seat.bottom { border-bottom: none; border-radius: 10px 10px 0 0; }
+        .chair-seat.complete { border-color: #22c55e; background: rgba(34,197,94,0.08); }
+        .chair-seat.swapped  { border-color: #f59e0b; background: rgba(245,158,11,0.1); }
+
+        /* Person circle sitting in the seat */
         .person-chip {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 44px;
-            height: 44px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             font-size: 13px;
-            font-weight: 600;
-            margin: 4px;
-            border: 2px solid rgba(99,102,241,0.3);
-            background: #1e293b;
+            font-weight: 700;
+            border: 2px solid rgba(99,102,241,0.5);
+            background: #0f172a;
             color: #94a3b8;
             transition: all 0.3s ease;
         }
@@ -90,22 +132,29 @@
         }
 
         .table-lane {
-            background: rgba(99,102,241,0.05);
-            border: 1px solid rgba(99,102,241,0.1);
-            border-radius: 12px;
-            padding: 8px 12px;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            padding: 4px 8px;
         }
 
-        .divider-label {
+        .table-surface {
+            background: linear-gradient(180deg, #6b3f18 0%, #3d1f08 60%, #2e1605 100%);
+            border: 2px solid #8b5230;
+            border-radius: 12px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                0 6px 20px rgba(0,0,0,0.6),
+                inset 0 1px 0 rgba(255,200,120,0.12),
+                inset 0 -1px 0 rgba(0,0,0,0.3);
             font-size: 11px;
-            color: #475569;
+            font-weight: 600;
+            letter-spacing: 0.18em;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            text-align: center;
-            margin: 4px 0;
+            color: rgba(255,200,130,0.35);
         }
 
         .spinner {
@@ -178,10 +227,9 @@
 
         <!-- Seating table -->
         <div id="seatingCard" class="card p-6 mb-6 hidden">
-            <div class="divider-label mb-1">Seite A</div>
-            <div class="table-lane" id="rowA"></div>
-            <div class="divider-label my-2">&#8593; Tisch &#8595;</div>
-            <div class="table-lane" id="rowB"></div>
+            <div class="table-lane mb-2" id="rowA"></div>
+            <div class="table-surface my-2">Tisch</div>
+            <div class="table-lane mt-2" id="rowB"></div>
             <div id="swapInfo" class="text-center mt-4 text-sm text-amber-400 font-medium min-h-5"></div>
         </div>
 
@@ -257,8 +305,8 @@
             document.getElementById('nextStep').classList.add('hidden');
         }
 
-        renderRow('rowA', state, 0, n, swapped);
-        renderRow('rowB', state, n, 2 * n, swapped);
+        renderRow('rowA', state, 0, n, swapped, 'top');
+        renderRow('rowB', state, n, 2 * n, swapped, 'bottom');
 
         const info = document.getElementById('swapInfo');
         if (state.swap) {
@@ -270,17 +318,39 @@
         showContactMatrix(state);
     }
 
-    function renderRow(containerId, state, from, to, swapped) {
+    function renderRow(containerId, state, from, to, swapped, side) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
         for (let i = from; i < to; i++) {
             const person = state.arrangement[i];
             const isComplete = countBits(BigInt(state.neighbor_history[person])) >= state.total_seats;
             const isSwapped = swapped.includes(person);
+            const sc = isSwapped ? ' swapped' : (isComplete ? ' complete' : '');
+
+            const wrap = document.createElement('div');
+            wrap.className = 'chair-container';
+
+            const back = document.createElement('div');
+            back.className = 'chair-back ' + side + sc;
+
+            // Person circle inside seat cushion
             const chip = document.createElement('div');
-            chip.className = 'person-chip' + (isSwapped ? ' swapped' : (isComplete ? ' complete' : ''));
+            chip.className = 'person-chip' + sc;
             chip.textContent = person + 1;
-            container.appendChild(chip);
+
+            const seat = document.createElement('div');
+            seat.className = 'chair-seat ' + side + sc;
+            seat.appendChild(chip);
+
+            if (side === 'top') {
+                wrap.appendChild(back);
+                wrap.appendChild(seat);
+            } else {
+                wrap.appendChild(seat);
+                wrap.appendChild(back);
+            }
+
+            container.appendChild(wrap);
         }
     }
 

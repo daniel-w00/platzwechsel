@@ -188,9 +188,9 @@ class SeatingOptimizer:
 
     def print_pretty_seating_order(self, state: SeatingState, n_per_side: int) -> None:
         """Prints the current seating order in a pretty way with a new line after every n-th person."""
-        print("Aktuelle Sitzordnung:")
+       # print("Aktuelle Sitzordnung:")
         for i, person in enumerate(state.current_arrangement):
-            print(f"{person + 1:2}", end=' ')
+           # print(f"{person + 1:2}", end=' ')
             if (i + 1) % self.n_per_side == 0:
                 print()  # New line after every n_per_side persons
         print()  # Ensure the last line ends properly
@@ -206,7 +206,7 @@ class SeatingOptimizer:
         else:
             print("Keine Tauschoperationen durchgeführt.")
 
-        print("Nachbarhistorie:")
+        #print("Nachbarhistorie:")
         for person in range(self.total_seats):
             neighbors = []
             # Durchlaufe alle möglichen Nachbarn
@@ -214,7 +214,7 @@ class SeatingOptimizer:
                 # Prüfe ob das entsprechende Bit gesetzt ist
                 if state.neighbor_history[person] & (1 << n):
                     neighbors.append(n + 1)  # +1 für 1-basierte Ausgabe
-            print(f"Person {person + 1} hatte Kontakt mit: {neighbors}")
+            #print(f"Person {person + 1} hatte Kontakt mit: {neighbors}")
 
     def print_all_states(self) -> None:
         """Prints all states in the order of the state history."""
@@ -255,7 +255,7 @@ def optimize_seating(optimizer: SeatingOptimizer) -> None:
 
 
 if __name__ == "__main__":
-    optimizer = SeatingOptimizer(n_per_side=10)
+    optimizer = SeatingOptimizer(n_per_side=9)
 
     optimize_seating(optimizer)
 
