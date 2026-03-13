@@ -1,4 +1,4 @@
-# Platzwechsel
+# Seat Optimizer
 
 Ever wondered how few seat swaps it takes for everyone at a table to have sat next to everyone else?
 
@@ -6,11 +6,11 @@ This tool finds out. Given `n` people seated at a rectangular table (two rows fa
 
 Neighbor relationships are tracked using bitmasks for efficiency. At each step the algorithm greedily picks the swap that creates the most new neighbor connections.
 
-A Flask web app (`app.py`) serves the optimizer at **[platzwechsel.pythonanywhere.com](https://platzwechsel.pythonanywhere.com)**, where you can interactively configure the table size and step through the generated swap sequence.
+A Flask web app (`app.py`) serves the optimizer at **[seatoptimizer.wilhelm-daniel.de](https://seatoptimizer.wilhelm-daniel.de)**, where you can interactively configure the table size and step through the generated swap sequence.
 
 ## Usage
 
-**Web:** visit [platzwechsel.pythonanywhere.com](https://platzwechsel.pythonanywhere.com)
+**Web:** visit [seatoptimizer.wilhelm-daniel.de](https://seatoptimizer.wilhelm-daniel.de)
 
 **CLI:**
 ```bash
